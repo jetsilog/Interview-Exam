@@ -1,42 +1,31 @@
-import { useEffect, useState } from "react";
-import "./App.css";
+// client.js
+import React, { useEffect, useState } from "react";
+import socketIOClient from "socket.io-client";
 import axios from "axios";
+
+const socket = socketIOClient("http://localhost:3001");
 
 function App() {
   const [counter, setCounter] = useState(0);
 
   const incrementCounter = async () => {
-    try {
-      const newCounterValue = counter + 1;
-      await axios.patch("http://localhost:3000/count/1", {
-        counter: newCounterValue,
-      });
-      setCounter(newCounterValue);
-      localStorage.setItem("counter", newCounterValue);
-    } catch (error) {
-      console.log(error.message);
-    }
+    const newCounterValue = counter + 1;
+    await axios.patch("http://localhost:3001/counter", {
+      newCounterValue,
+    });
   };
 
   useEffect(() => {
-    const storedCounter = localStorage.getItem("counter");
-    if (storedCounter) {
-      setCounter(parseInt(storedCounter, 10));
-    }
+    socket.on("counterUpdate", (newCounterValue) => {
+      setCounter(newCounterValue);
+    });
 
     const fetchCounter = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/count/1");
-        setCounter(response.data[0].counter);
-      } catch (error) {
-        console.log(error.message);
-      }
+      const response = await axios.get("http://localhost:3001/counter");
+      setCounter(response.data.counter);
     };
 
     fetchCounter();
-
-    const interval = setInterval(fetchCounter, 2000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
