@@ -1,4 +1,3 @@
-// client.js
 import React, { useEffect, useState } from "react";
 import socketIOClient from "socket.io-client";
 import axios from "axios";
